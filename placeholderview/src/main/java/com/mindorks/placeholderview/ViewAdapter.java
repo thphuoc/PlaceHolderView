@@ -2,7 +2,8 @@ package com.mindorks.placeholderview;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,7 +109,7 @@ public class ViewAdapter<T> extends RecyclerView.Adapter<ViewHolder<T, ViewBinde
         }
     }
 
-    protected List<ViewBinder<T, View>> getViewBinderList() {
+    public List<ViewBinder<T, View>> getViewBinderList() {
         return mViewBinderList;
     }
 
@@ -139,6 +140,26 @@ public class ViewAdapter<T> extends RecyclerView.Adapter<ViewHolder<T, ViewBinde
             resolverList.add(viewBinder.getResolver());
         }
         return resolverList;
+    }
+
+    public void swapPosition(int from, int to) {
+        ViewBinder viewBinderFrom = mViewBinderList.get(from);
+        ViewBinder viewBinderTo = mViewBinderList.get(to);
+
+        mViewBinderList.set(from, viewBinderTo);
+        mViewBinderList.set(to, viewBinderFrom);
+
+        notifyItemMoved(from, to);
+    }
+
+    public void dispatchUpdate(List<T> viewResolvers, DiffUtil.DiffResult result) {
+        this.mViewBinderList.clear();
+
+        for (int i = 0; i < viewResolvers.size(); ++i) {
+            this.mViewBinderList.add(Binding.bindViewResolver(viewResolvers.get(i)));
+        }
+
+        result.dispatchUpdatesTo(this);
     }
 
     protected void removeAllViewBinders() {
